@@ -1,0 +1,7 @@
+name = "RandomForestInteractions"
+uuid = "a193e9c9-2fde-486f-a7cd-74f14baf7866"
+authors = ["Ben <bjeffrey92@hotmail.com>"]
+version = "0.1.0"
+
+[deps]
+JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
