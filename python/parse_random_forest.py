@@ -13,7 +13,7 @@ class DecisionTree:
     def __init__(self, dt: DecisionTreeRegressor):
         self.decision_tree = dt
         self.n_nodes = dt.tree_.node_count
-        self.features = dt.tree_.feature
+        self.features = dt.tree_.feature + 1 # julia is indexed from 1
         self.tree = {}
         self.leaf_idx = zeros(shape=self.n_nodes, dtype=bool)
 
@@ -47,7 +47,7 @@ class DecisionTree:
         self.internal_node_features = self.internal_node_features.tolist()
 
 
-def write_json(model: List[DecisionTreeRegressor], output_file: str):
+def write_json(model: List[DecisionTree], output_file: str):
     output = {}
     output["estimators"] = []
     for tree in model:

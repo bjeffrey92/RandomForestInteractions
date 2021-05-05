@@ -1,5 +1,8 @@
 module RandomForestInteractions
 
-greet() = print("Hello World!")
+include("./ParseRF.jl")
+using .ParseRF
+
+
 
 end # module
