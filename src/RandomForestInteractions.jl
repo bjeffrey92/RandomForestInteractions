@@ -1,7 +1,7 @@
 module RandomForestInteractions
 
-include("./ParseRF.jl")
-using .ParseRF
+include("ParseRF.jl")
+using ParseRF
 
 
 

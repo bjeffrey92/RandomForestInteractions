@@ -13,7 +13,7 @@ class DecisionTree:
     def __init__(self, dt: DecisionTreeRegressor):
         self.decision_tree = dt
         self.n_nodes = dt.tree_.node_count
-        self.features = dt.tree_.feature + 1 # julia is indexed from 1
+        self.features = dt.tree_.feature
         self.tree = {}
         self.leaf_idx = zeros(shape=self.n_nodes, dtype=bool)
 
@@ -24,17 +24,26 @@ class DecisionTree:
             # `pop` ensures each node is only visited once
             node_id = stack.pop()
 
-            children_left_ids = children_left[node_id].tolist()
-            children_right_ids = children_right[node_id].tolist()
+            children_left_ids = children_left[node_id]
+            children_right_ids = children_right[node_id]
 
             is_split_node = children_left_ids != children_right_ids
             # If a split node, append left and right children to `stack`
             if is_split_node:
-                stack.append(children_left_ids)
-                stack.append(children_right_ids)
+                stack.append(children_left_ids.tolist())
+                stack.append(children_right_ids.tolist())
 
-                self.tree.setdefault(node_id, []).append(children_left_ids)
-                self.tree.setdefault(node_id, []).append(children_right_ids)
+                # julia is indexed from 1
+                jl_node_id = node_id + 1
+                jl_children_left_ids = (children_left_ids + 1).tolist()
+                jl_children_right_ids = (children_right_ids + 1).tolist()
+
+                self.tree.setdefault(jl_node_id, []).append(
+                    jl_children_left_ids
+                )
+                self.tree.setdefault(jl_node_id, []).append(
+                    jl_children_right_ids
+                )
 
             else:
                 self.leaf_idx[node_id] = True
