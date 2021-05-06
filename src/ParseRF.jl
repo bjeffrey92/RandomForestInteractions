@@ -1,6 +1,6 @@
 module ParseRF
 
-export parse_rf
+export parse_rf, decision_tree
 
 using JSON
 using Combinatorics
@@ -17,7 +17,7 @@ end
 """
     traverse_tree(1, 2, tree)
 
-Walk down the tree from feature_1 and return true is ever encounter feature_2.
+Walk down the tree from feature_1 and return true if ever encounter feature_2.
 """
 function traverse_tree(
     feature_1::Int, 
