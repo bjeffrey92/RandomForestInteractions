@@ -1,6 +1,6 @@
 module ParseRF
 
-export parse_rf, decision_tree
+export parse_rf, co_occuring_feature_pairs, decision_tree
 
 using JSON
 using Combinatorics
@@ -223,8 +223,7 @@ function parse_rf(rf_json::String)
     formatted_trees = convert_json_rf(trees)
     included_features = extract_rf_features(formatted_trees)
     feature_pairs = generate_feature_pairs(included_features)
-    fp_trees = co_occuring_feature_pairs(formatted_trees, feature_pairs)
-    return formatted_trees, included_features, feature_pairs, fp_trees
+    return formatted_trees, included_features, feature_pairs
 end
             
 end # module

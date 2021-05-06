@@ -2,7 +2,6 @@ module RandomForestInteractions
 
 include("ParseRF.jl")
 
-using ParseRF
 using DataFrames
 using HypothesisTests
 
