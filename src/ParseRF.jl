@@ -7,10 +7,10 @@ using Combinatorics
 
 
 struct decision_tree
-    features::Vector{Integer}
-    tree::Dict{Integer,Vector{Integer}}
+    features::Vector{Int}
+    tree::Dict{Int,Vector{Int}}
     leaf_idx::Vector{Bool}
-    internal_node_features::Vector{Integer}
+    internal_node_features::Vector{Int}
 end
 
 
@@ -20,8 +20,8 @@ end
 Walk down the tree from feature_1 and return true is ever encounter feature_2.
 """
 function traverse_tree(
-    feature_1::Integer, 
-    feature_2::Integer, 
+    feature_1::Int, 
+    feature_2::Int, 
     tree::decision_tree
 )::Bool
     function recursive_search(node)
@@ -51,7 +51,7 @@ Determine whether the feature pair are linked in a tree.
 """
 function linked_features(
     tree::decision_tree, 
-    feature_pair::Vector{Integer}, 
+    feature_pair::Vector{Int}, 
     both_permutations::Bool=false
 )::Bool
     if !all([f in tree.internal_node_features for f in feature_pair])
@@ -86,8 +86,8 @@ Get every tree in which the feature pair are linked.
 """
 function relevant_trees(
     trees::Vector{decision_tree}, 
-    feature_pairs::Vector{Vector{Integer}}
-)::Dict{Vector{Integer},Vector{Bool}}
+    feature_pairs::Vector{Vector{Int}}
+)::Dict{Vector{Int},Vector{Bool}}
     d = Dict()
     for fp in feature_pairs
         d[fp] = [linked_features(tree, fp) for tree in trees]
@@ -103,7 +103,7 @@ Determine which pairs of features are linked in the decision path of each tree.
 """
 function co_occuring_feature_pairs(
     trees::Vector{decision_tree},
-    feature_pairs::Vector{Vector{Integer}}
+    feature_pairs::Vector{Vector{Int}}
 )::Dict
 
     feature_pairs = [sort([i for i in j]) for j in feature_pairs]
@@ -125,9 +125,9 @@ end
 Calculate whether two features are at the same position in a sequence.
 """
 function valid_feature_pair(
-    feature_1::Integer,
-    feature_2::Integer;
-    alphabet_size::Integer=20
+    feature_1::Int,
+    feature_2::Int;
+    alphabet_size::Int=20
 )::Bool
     feature_1_position = ceil((feature_1 + 1) / alphabet_size)
     feature_2_position = ceil((feature_2 + 1) / alphabet_size)
@@ -143,8 +143,8 @@ Get every valid pair of features
 function generate_feature_pairs(
     included_features::Vector;
     check_positions::Bool=true,
-    alphabet_size::Integer=20
-)::Vector{Vector{Integer}}
+    alphabet_size::Int=20
+)::Vector{Vector{Int}}
     feature_pairs = collect(
         combinations(included_features, 2)
         )
@@ -164,7 +164,7 @@ end
 
 Get the ids of the features which were used by the random forest model.
 """
-function extract_rf_features(trees::Vector{decision_tree})::Vector{Integer}
+function extract_rf_features(trees::Vector{decision_tree})::Vector{Int}
     all_features = [
         tree.internal_node_features for tree in trees
     ]
@@ -182,14 +182,14 @@ function convert_json_rf(trees::Dict)::Vector{decision_tree}
 
     formatted_trees = Vector{decision_tree}()
     for tree in trees["estimators"]
-        features = convert(Array{Integer,1}, tree["features"])
+        features = convert(Array{Int,1}, tree["features"])
         internal_node_features = convert(
-            Array{Integer,1}, tree["internal_node_features"]
+            Array{Int,1}, tree["internal_node_features"]
         )
         leaf_idx = convert(Array{Bool,1}, tree["leaf_idx"])
         tree_ = Dict()
         for (k, v) in tree["tree"]
-            tree_[parse(Integer, k)] = convert(Array{Integer,1}, v)
+            tree_[parse(Int, k)] = convert(Array{Int,1}, v)
         end
 
         push!(formatted_trees,
