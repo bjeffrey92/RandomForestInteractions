@@ -2,8 +2,9 @@ module ParseRF
 
 export parse_rf, co_occuring_feature_pairs, decision_tree
 
-using JSON
 using Combinatorics
+using DecisionTree
+using JSON
 
 
 struct decision_tree
@@ -213,17 +214,35 @@ function load_rf_json(file_path::String)::Dict
 end
 
 
+function parse_decision_tree(decision_tree)
+    tree = Dict()
+    function append_to_tree(dt)
+        children_left = dt.left
+        children_right = dt.right
+        tree[dt.featid] = [children_left.featid, children_right.featid]
+        
+        if !isa(children_left, Leaf)
+            append_to_tree(children_left)
+        end
+        if !isa(children_right, Leaf)
+            append_to_tree(children_right)
+        end
+    end
+    append_to_tree(decision_tree)
+end
+
+
 """
     parse_rf("rf.json")
 
 Read in a json representation of a random forest model.
 """
-function parse_rf(rf_json::String)
-    trees = load_rf_json(rf_json)
-    formatted_trees = convert_json_rf(trees)
-    included_features = extract_rf_features(formatted_trees)
-    feature_pairs = generate_feature_pairs(included_features)
-    return formatted_trees, feature_pairs
-end
+    function parse_rf(rf_json::String)
+        trees = load_rf_json(rf_json)
+        formatted_trees = convert_json_rf(trees)
+        included_features = extract_rf_features(formatted_trees)
+        feature_pairs = generate_feature_pairs(included_features)
+        return formatted_trees, feature_pairs
+    end
             
 end # module
