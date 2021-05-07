@@ -157,7 +157,7 @@ function generate_feature_pairs(
             ] 
     end
 end
-         
+
 
 """
     extract_rf_features(trees)
@@ -223,7 +223,7 @@ function parse_rf(rf_json::String)
     formatted_trees = convert_json_rf(trees)
     included_features = extract_rf_features(formatted_trees)
     feature_pairs = generate_feature_pairs(included_features)
-    return formatted_trees, included_features, feature_pairs
+    return formatted_trees, feature_pairs
 end
             
 end # module

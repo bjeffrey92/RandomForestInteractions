@@ -6,22 +6,32 @@ using DataFrames
 using HypothesisTests
 
 
+"""
+    paired_selection_frequency(trees, feature_pairs)
+
+Calculate the paired selection frequency test p value for each pair of features in trees of the random forest.
+"""
 function paired_selection_frequency(
     trees::Vector{ParseRF.decision_tree},
-    included_features::Vector{Int},
     feature_pairs::Vector{Vector{Int}}
 )::Vector
 
+    all_features = unique(collect(Iterators.flatten(feature_pairs)))
+
     # dataframe to store trees in which each feature is present
     feature_tree_matches = Dict()
-    for feat in included_features
+    for feat in all_features
         feature_tree_matches[string(feat)] = [
             feat in tree.internal_node_features for tree in trees
         ]
     end
     tree_features_df = DataFrame(feature_tree_matches)
 
-    fisher_test_p_values = Vector()
+    fisher_test_p_values = Dict(
+        "feature_1" => Vector{Int}(),
+        "feature_2" => Vector{Int}(),
+        "P_value" => Vector{Float64}()
+    )
     for fp in feature_pairs
         fp_1 = string(fp[1])
         fp_2 = string(fp[2])
@@ -44,13 +54,16 @@ function paired_selection_frequency(
             FisherExactTest(N_12, N_1, N_2, N_neither), tail=:right
         )
 
-        push!(fisher_test_p_values, [fp[1], fp[2], p_value])
+        push!(fisher_test_p_values["feature_1"], fp[1])
+        push!(fisher_test_p_values["feature_2"], fp[2])
+        push!(fisher_test_p_values["P_value"], p_value)
     end
 
-    # sort by p value
-    sort!(fisher_test_p_values, by=x -> x[3])
+    df = DataFrame(fisher_test_p_values)
+    sort!(df, order(:P_value)) # order by p value
 
-    return fisher_test_p_values
+    return df
 end
+
 
 end # module
