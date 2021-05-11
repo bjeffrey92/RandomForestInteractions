@@ -143,7 +143,7 @@ Get every valid pair of features
 """
 function generate_feature_pairs(
     included_features::Vector;
-    check_positions::Bool=true,
+    check_positions::Bool=false,
     alphabet_size::Int=20
 )::Vector{Vector{Int}}
     feature_pairs = collect(
@@ -279,23 +279,53 @@ end
     parse_rf("rf.json")
 
 Read in a json representation of a random forest model.
+...
+# Arguments
+- `check_positions::Bool=true`: Used when processing biological sequence data. 
+    If true will exclude pairs of features which are at the same locus.
+- `alphabet_size::Int=20`: Only used if `check_positions == true`. Should be 4
+    for nucleotide sequence or 20 for amino acid sequence for example.
+...
 """
-function parse_rf(rf_json::String)
+function parse_rf(
+    rf_json::String;
+    check_positions::Bool=false,
+    alphabet_size::Int=20
+)
     trees = load_rf_json(rf_json)
     formatted_trees = convert_json_rf(trees)
     included_features = extract_rf_features(formatted_trees)
-    feature_pairs = generate_feature_pairs(included_features)
+    feature_pairs = generate_feature_pairs(
+        included_features, 
+        check_positions=check_positions,
+        alphabet_size=alphabet_size
+    )
     return formatted_trees, feature_pairs
 end
 """
     parse_rf(random_forest)
 
 Read in a julia random forest model from the DecisionTree module.
+...
+# Arguments
+- `check_positions::Bool=true`: Used when processing biological sequence data. 
+    If true will exclude pairs of features which are at the same locus.
+- `alphabet_size::Int=20`: Only used if `check_positions == true`. Should be 4
+    for nucleotide sequence or 20 for amino acid sequence for example.
+...
 """
-function parse_rf(random_forest::Ensemble{Float64,Float64})
+function parse_rf(
+    random_forest::Ensemble;
+    check_positions::Bool=false,
+    alphabet_size::Int=20
+)
     formatted_trees = [parse_decision_tree(dt) for dt in random_forest.trees]
     included_features = extract_rf_features(formatted_trees)
-    feature_pairs = generate_feature_pairs(included_features)
+    feature_pairs = generate_feature_pairs(
+        included_features, 
+        check_positions=check_positions,
+        alphabet_size=alphabet_size
+    )
     return formatted_trees, feature_pairs
 end
 
