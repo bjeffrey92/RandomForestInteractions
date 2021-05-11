@@ -214,21 +214,64 @@ function load_rf_json(file_path::String)::Dict
 end
 
 
-function parse_decision_tree(decision_tree)
-    tree = Dict()
+"""
+    formatted_tree = parse_decision_tree(tree)
+
+Convert a julia Decision Tree object to decision_tree struct.
+"""
+function parse_decision_tree(tree::Node{Float64,Float64})::decision_tree
+    # attributes of a decision_tree
+    tree_structure = Dict()
+    tree_features = Vector{Int}()
+    tree_leaf_idx = Vector{Bool}()
+
+    idx = 1
     function append_to_tree(dt)
         children_left = dt.left
         children_right = dt.right
-        tree[dt.featid] = [children_left.featid, children_right.featid]
+
+        global idx
         
+        idx_parent = idx
+        tree_structure[idx_parent] = Vector{Int}()
+        push!(tree_features, dt.featid)
+        push!(tree_leaf_idx, false)
+        idx += 1
+
         if !isa(children_left, Leaf)
+            push!(tree_structure[idx_parent], idx)
+            push!(tree_features, children_left.featid)
+            push!(tree_leaf_idx, false)
             append_to_tree(children_left)
+        else
+            push!(tree_structure[idx_parent], idx)
+            push!(tree_features, -2)
+            push!(tree_leaf_idx, true)
+            idx += 1
         end
+
         if !isa(children_right, Leaf)
+            push!(tree_structure[idx_parent], idx)
+            push!(tree_features, children_right.featid)
+            push!(tree_leaf_idx, false)
             append_to_tree(children_right)
+        else
+            push!(tree_structure[idx_parent], idx)
+            push!(tree_features, -2)
+            push!(tree_leaf_idx, true)
+            idx += 1
         end
     end
-    append_to_tree(decision_tree)
+    append_to_tree(tree)
+
+    tree_internal_node_features = unique(tree_features[.!tree_leaf_idx])
+
+    return decision_tree(
+        tree_features, 
+        tree_structure, 
+        tree_leaf_idx, 
+        tree_internal_node_features
+    )
 end
 
 
@@ -237,12 +280,12 @@ end
 
 Read in a json representation of a random forest model.
 """
-    function parse_rf(rf_json::String)
-        trees = load_rf_json(rf_json)
-        formatted_trees = convert_json_rf(trees)
-        included_features = extract_rf_features(formatted_trees)
-        feature_pairs = generate_feature_pairs(included_features)
-        return formatted_trees, feature_pairs
-    end
+function parse_rf(rf_json::String)
+    trees = load_rf_json(rf_json)
+    formatted_trees = convert_json_rf(trees)
+    included_features = extract_rf_features(formatted_trees)
+    feature_pairs = generate_feature_pairs(included_features)
+    return formatted_trees, feature_pairs
+end
             
 end # module
