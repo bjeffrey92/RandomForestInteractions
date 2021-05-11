@@ -231,7 +231,7 @@ function parse_decision_tree(tree::Node{Float64,Float64})::decision_tree
         children_right = dt.right
 
         global idx
-        
+
         idx_parent = idx
         tree_structure[idx_parent] = Vector{Int}()
         push!(tree_features, dt.featid)
@@ -287,5 +287,17 @@ function parse_rf(rf_json::String)
     feature_pairs = generate_feature_pairs(included_features)
     return formatted_trees, feature_pairs
 end
-            
+"""
+    parse_rf(random_forest)
+
+Read in a julia random forest model from the DecisionTree module.
+"""
+function parse_rf(random_forest::Ensemble{Float64,Float64})
+    formatted_trees = [parse_decision_tree(dt) for dt in random_forest.trees]
+    included_features = extract_rf_features(formatted_trees)
+    feature_pairs = generate_feature_pairs(included_features)
+    return formatted_trees, feature_pairs
+end
+
+
 end # module
