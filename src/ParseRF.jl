@@ -230,8 +230,6 @@ function parse_decision_tree(tree::Node{Float64,Float64})::decision_tree
         children_left = dt.left
         children_right = dt.right
 
-        global idx
-
         idx_parent = idx
         tree_structure[idx_parent] = Vector{Int}()
         push!(tree_features, dt.featid)
