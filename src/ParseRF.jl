@@ -1,6 +1,6 @@
 module ParseRF
 
-export parse_rf, co_occuring_feature_pairs, decision_tree
+export co_occuring_feature_pairs, decision_tree, parse_rf
 
 using Combinatorics
 using DecisionTree
@@ -134,7 +134,7 @@ function valid_feature_pair(
     feature_2_position = ceil((feature_2 + 1) / alphabet_size)
     return feature_1_position != feature_2_position
 end
-    
+
 
 """
     generate_feature_pairs(included_features, check_positions=true)
