@@ -4,8 +4,6 @@ import sys
 from typing import List
 
 from numpy import zeros
-
-from sklearn.ensemble import RandomForestRegressor
 from sklearn.tree import DecisionTreeRegressor
 
 
@@ -14,7 +12,7 @@ class DecisionTree:
         self.decision_tree = dt
         self.n_nodes = dt.tree_.node_count
         self.features = dt.tree_.feature
-        self.tree = {}
+        self.tree = {}  # type: ignore
         self.leaf_idx = zeros(shape=self.n_nodes, dtype=bool)
 
         children_left = dt.tree_.children_left
@@ -57,7 +55,7 @@ class DecisionTree:
 
 
 def write_json(model: List[DecisionTree], output_file: str):
-    output = {}
+    output = {}  # type: ignore
     output["estimators"] = []
     for tree in model:
         output["estimators"].append(
