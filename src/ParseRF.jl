@@ -236,28 +236,28 @@ function parse_decision_tree(tree::Node{Float64,Float64})::decision_tree
         push!(tree_leaf_idx, false)
         idx += 1
 
-        if !isa(children_left, Leaf)
+        if isa(children_left, Node)
             push!(tree_structure[idx_parent], idx)
-            push!(tree_features, children_left.featid)
-            push!(tree_leaf_idx, false)
             append_to_tree(children_left)
-        else
+        elseif isa(children_left, Leaf)
             push!(tree_structure[idx_parent], idx)
             push!(tree_features, -2)
             push!(tree_leaf_idx, true)
             idx += 1
+        else
+            throw(TypeError)
         end
 
-        if !isa(children_right, Leaf)
+        if isa(children_right, Node)
             push!(tree_structure[idx_parent], idx)
-            push!(tree_features, children_right.featid)
-            push!(tree_leaf_idx, false)
             append_to_tree(children_right)
-        else
+        elseif isa(children_right, Leaf)
             push!(tree_structure[idx_parent], idx)
             push!(tree_features, -2)
             push!(tree_leaf_idx, true)
             idx += 1
+        else
+            throw(TypeError)
         end
     end
     append_to_tree(tree)
@@ -265,9 +265,9 @@ function parse_decision_tree(tree::Node{Float64,Float64})::decision_tree
     tree_internal_node_features = unique(tree_features[.!tree_leaf_idx])
 
     return decision_tree(
-        tree_features, 
-        tree_structure, 
-        tree_leaf_idx, 
+        tree_features,
+        tree_structure,
+        tree_leaf_idx,
         tree_internal_node_features
     )
 end
