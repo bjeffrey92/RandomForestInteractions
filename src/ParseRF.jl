@@ -5,6 +5,7 @@ export co_occuring_feature_pairs, decision_tree, parse_rf
 using Combinatorics
 using DecisionTree
 using JSON
+using ProgressBars
 
 
 struct decision_tree
@@ -91,7 +92,7 @@ function relevant_trees(
     feature_pairs::Vector{Vector{Int}}
 )::Dict{Vector{Int},Vector{Bool}}
     d = Dict()
-    for fp in feature_pairs
+    for fp in ProgressBar(feature_pairs)
         d[fp] = [linked_features(tree, fp) for tree in trees]
     end
     return d
@@ -110,10 +111,9 @@ function co_occuring_feature_pairs(
 
     feature_pairs = [sort([i for i in j]) for j in feature_pairs]
     reverse_feature_pairs = [reverse(j) for j in feature_pairs]
+    append!(feature_pairs, reverse_feature_pairs)
 
-    tree_idx_1 = relevant_trees(trees, feature_pairs)
-    tree_idx_2 = relevant_trees(trees, reverse_feature_pairs)
-    all_fp_tree_matches = merge(tree_idx_1, tree_idx_2) # combine
+    all_fp_tree_matches = relevant_trees(trees, feature_pairs)
 
     return  Dict(
         i => trees[j] for (i, j) in all_fp_tree_matches if length(trees[j]) > 0
