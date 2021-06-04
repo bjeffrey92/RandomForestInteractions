@@ -1,6 +1,6 @@
 module ParseRF
 
-export co_occuring_feature_pairs, decision_tree, parse_rf
+export co_occuring_feature_pairs, decision_tree, parse_rf, traverse_tree
 
 using Combinatorics
 using DecisionTree
