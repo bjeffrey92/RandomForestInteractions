@@ -9,6 +9,7 @@ using JSON
 
 struct decision_tree
     features::Vector{Int}
+    values::Vector{Float64}
     tree::Dict{Int,Vector{Int}}
     leaf_idx::Vector{Bool}
     internal_node_features::Vector{Int}
@@ -115,7 +116,7 @@ function co_occuring_feature_pairs(
     all_fp_tree_matches = merge(tree_idx_1, tree_idx_2) # combine
 
     return  Dict(
-        i => j for (i, j) in all_fp_tree_matches if length(trees[j]) > 0
+        i => trees[j] for (i, j) in all_fp_tree_matches if length(trees[j]) > 0
     )
 end
 
@@ -184,6 +185,7 @@ function convert_json_rf(trees::Dict)::Vector{decision_tree}
     formatted_trees = Vector{decision_tree}()
     for tree in trees["estimators"]
         features = convert(Array{Int,1}, tree["features"])
+        values_ = convert(Array{Float64,1}, tree["values"])
         internal_node_features = convert(
             Array{Int,1}, tree["internal_node_features"]
         )
@@ -194,7 +196,13 @@ function convert_json_rf(trees::Dict)::Vector{decision_tree}
         end
 
         push!(formatted_trees,
-            decision_tree(features, tree_, leaf_idx, internal_node_features)
+            decision_tree(
+                features, 
+                values_, 
+                tree_, 
+                leaf_idx, 
+                internal_node_features
+            )
         )
     end
 
@@ -223,6 +231,7 @@ function parse_decision_tree(tree::Node{Float64,Float64})::decision_tree
     # attributes of a decision_tree
     tree_structure = Dict()
     tree_features = Vector{Int}()
+    feature_values = Vector{Float64}()
     tree_leaf_idx = Vector{Bool}()
 
     idx = 1
@@ -233,6 +242,7 @@ function parse_decision_tree(tree::Node{Float64,Float64})::decision_tree
         idx_parent = idx
         tree_structure[idx_parent] = Vector{Int}()
         push!(tree_features, dt.featid)
+        push!(feature_values, dt.featval)
         push!(tree_leaf_idx, false)
         idx += 1
 
@@ -242,6 +252,7 @@ function parse_decision_tree(tree::Node{Float64,Float64})::decision_tree
         elseif isa(children_left, Leaf)
             push!(tree_structure[idx_parent], idx)
             push!(tree_features, -2)
+            push!(feature_values, children_left.majority)
             push!(tree_leaf_idx, true)
             idx += 1
         else
@@ -254,6 +265,7 @@ function parse_decision_tree(tree::Node{Float64,Float64})::decision_tree
         elseif isa(children_right, Leaf)
             push!(tree_structure[idx_parent], idx)
             push!(tree_features, -2)
+            push!(feature_values, children_right.majority)
             push!(tree_leaf_idx, true)
             idx += 1
         else
@@ -266,6 +278,7 @@ function parse_decision_tree(tree::Node{Float64,Float64})::decision_tree
 
     return decision_tree(
         tree_features,
+        feature_values,
         tree_structure,
         tree_leaf_idx,
         tree_internal_node_features

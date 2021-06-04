@@ -9,9 +9,9 @@ from sklearn.tree import DecisionTreeRegressor
 
 class DecisionTree:
     def __init__(self, dt: DecisionTreeRegressor):
-        self.decision_tree = dt
         self.n_nodes = dt.tree_.node_count
         self.features = dt.tree_.feature
+        self.values = dt.tree_.value.squeeze()
         self.tree = {}  # type: ignore
         self.leaf_idx = zeros(shape=self.n_nodes, dtype=bool)
 
@@ -50,6 +50,7 @@ class DecisionTree:
 
         # convert from numpy array to list so can be json serialized
         self.features = self.features.tolist()
+        self.values = self.values.tolist()
         self.leaf_idx = self.leaf_idx.tolist()
         self.internal_node_features = self.internal_node_features.tolist()
 
@@ -62,6 +63,7 @@ def write_json(model: List[DecisionTree], output_file: str):
             {
                 "tree": tree.tree,
                 "features": tree.features,
+                "values": tree.values,
                 "leaf_idx": tree.leaf_idx,
                 "internal_node_features": tree.internal_node_features,
             }
