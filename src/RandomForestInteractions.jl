@@ -105,7 +105,7 @@ function split_asymmetry(
 
         # get nodes of second feature on right hand side of first feature
         all_fp_2 = [i for i in all_fp_2 if !(i in left_fp_2_loc)]
-        right_fp_2_loc = []
+        right_fp_2_loc = Vector{Int}()
         for fp_2 in all_fp_2
             if ParseRF.traverse_tree(right_child, fp_2, tree)
                 push!(right_fp_2_loc, fp_2)
@@ -115,6 +115,13 @@ function split_asymmetry(
             return nothing
         end
         
+
+        # get values of children of each node which is split on the second feat
+        left_slope_values = tree.values[tree.tree[left_fp_2_loc[1]]]
+        right_slope_values =  tree.values[tree.tree[right_fp_2_loc[1]]]
+
+        # return gradients of two slopes
+        return diff(left_slope_values), diff(right_slope_values)
     end
 
     fp_slopes = Dict()
@@ -125,5 +132,28 @@ function split_asymmetry(
             fp_slopes[fp] = slopes    
         end
     end
+
+    t_test_p_values = Dict(
+        "feature_1" => Vector{Int}(),
+        "feature_2" => Vector{Int}(),
+        "P_value" => Vector{Float64}()
+    )
+    for (fp, slopes) in fp_slopes
+        left_slopes = [i[1][1] for i in slopes]
+        right_slopes = [i[2][1] for i in slopes]
+
+        p_value = pvalue(UnequalVarianceTTest(left_slopes, right_slopes))
+
+        push!(t_test_p_values["feature_1"], fp[1])
+        push!(t_test_p_values["feature_2"], fp[2])
+        push!(t_test_p_values["P_value"], p_value)
+
+    end
+
+    df = DataFrame(t_test_p_values)
+    sort!(df, order(:P_value)) # order by p value
+
+    return df
+end
 
 end # module
